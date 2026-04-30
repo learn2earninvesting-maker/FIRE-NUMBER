@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financial Freedom Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#04080f;
+  --bg2:#080e1a;
+  --bg3:#0d1526;
+  --bg4:#111d33;
+  --amber:#f0a500;
+  --amber2:#c97f00;
+  --amber3:#ffcf6b;
+  --amber-dim:rgba(240,165,0,0.12);
+  --amber-glow:rgba(240,165,0,0.06);
+  --teal:#1bbf8a;
+  --teal-dim:rgba(27,191,138,0.12);
+  --red:#e05a5a;
+  --red-dim:rgba(224,90,90,0.12);
+  --blue:#4e9eff;
+  --blue-dim:rgba(78,158,255,0.1);
+  --text:#e8e8e0;
+  --text2:#9aa0b0;
+  --text3:#5a6070;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(240,165,0,0.2);
+  --radius:12px;
+  --radius-sm:8px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;min-height:100vh;overflow-x:hidden}
+
+/* HEADER */
+.header{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{width:32px;height:32px;background:var(--amber);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:16px;font-weight:600;color:#04080f}
+.logo-text{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:var(--text)}
+.logo-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.header-right{display:flex;align-items:center;gap:12px}
+.calc-btn-main{background:var(--amber);color:#04080f;border:none;border-radius:var(--radius-sm);padding:0 20px;height:36px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap}
+.calc-btn-main:hover{background:var(--amber3);transform:translateY(-1px)}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--text3)}
+.status-dot.ready{background:var(--teal);box-shadow:0 0 8px rgba(27,191,138,.5)}
+
+/* LAYOUT */
+.shell{display:grid;grid-template-columns:320px 1fr;min-height:calc(100vh - 64px)}
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);padding:24px 20px;overflow-y:auto;height:calc(100vh - 64px);position:sticky;top:64px}
+.main{padding:28px 28px;overflow-y:auto}
+
+/* SIDEBAR */
+.s-section{margin-bottom:24px}
+.s-title{font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.s-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:400}
+.field input,.field select{width:100%;height:34px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0 10px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color .15s}
+.field input:focus,.field select:focus{border-color:var(--amber2)}
+.field select option{background:var(--bg3)}
+.field .hint{font-size:10px;color:var(--text3);margin-top:2px}
+.grid2s{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stepper-field{margin-bottom:10px}
+.stepper-field .sf-label{font-size:11px;color:var(--text2);margin-bottom:6px;display:block}
+.stepper-row{display:flex;align-items:center;gap:0;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;height:34px}
+.stepper-row:focus-within{border-color:var(--amber2)}
+.stepper-btn{width:34px;height:34px;flex-shrink:0;background:var(--bg4);border:none;color:var(--text2);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s;user-select:none;line-height:1}
+.stepper-btn:hover{background:var(--amber-dim);color:var(--amber)}
+.stepper-btn:active{background:rgba(240,165,0,.2)}
+.stepper-val{flex:1;text-align:center;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--amber);background:none;border:none;outline:none;cursor:default}
+
+/* GOALS & LOANS */
+.item-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:8px;position:relative}
+.item-card .remove-btn{position:absolute;top:8px;right:8px;background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;line-height:1;padding:2px 5px;border-radius:4px;transition:color .15s}
+.item-card .remove-btn:hover{color:var(--red)}
+.item-card .ic-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.item-card .ic-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:6px}
+.item-card .ic-label{font-size:10px;color:var(--text3);margin-bottom:3px}
+.item-card .ic-input{width:100%;height:28px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:12px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none}
+.item-card .ic-input:focus{border-color:var(--amber2)}
+.item-card .ic-select{width:100%;height:28px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;padding:0 6px;font-size:12px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none}
+.item-card .badge{display:inline-block;font-size:9px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:10px;margin-bottom:6px}
+.badge-edu{background:rgba(27,191,138,.15);color:#1bbf8a}
+.badge-marriage{background:rgba(240,165,0,.15);color:#f0a500}
+.badge-asset{background:rgba(78,158,255,.15);color:#4e9eff}
+.badge-other{background:rgba(255,255,255,.07);color:var(--text2)}
+.badge-home{background:rgba(78,158,255,.15);color:#4e9eff}
+.badge-car{background:rgba(27,191,138,.15);color:#1bbf8a}
+.badge-personal{background:rgba(224,90,90,.15);color:#e05a5a}
+.add-btn{width:100%;height:30px;background:none;border:1px dashed var(--border);border-radius:var(--radius-sm);color:var(--text3);font-size:12px;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif}
+.add-btn:hover{border-color:var(--amber2);color:var(--amber)}
+
+/* MAIN DASHBOARD */
+.dash-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px}
+.dash-title{font-family:'Playfair Display',serif;font-size:28px;font-weight:500;color:var(--text);line-height:1.2}
+.dash-sub{font-size:13px;color:var(--text3);margin-top:4px}
+
+/* KPI STRIP */
+.kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden;transition:border-color .2s}
+.kpi:hover{border-color:var(--border2)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--amber);opacity:0;transition:opacity .2s}
+.kpi:hover::before{opacity:1}
+.kpi.featured{border-color:var(--border2);background:linear-gradient(135deg,var(--bg2) 0%,rgba(240,165,0,0.04) 100%)}
+.kpi.featured::before{opacity:1}
+.kpi-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.kpi-val{font-family:'Playfair Display',serif;font-size:22px;font-weight:500;color:var(--amber);line-height:1}
+.kpi-val.neutral{color:var(--text)}
+.kpi-val.teal{color:var(--teal)}
+.kpi-val.red{color:var(--red)}
+.kpi-sub{font-size:11px;color:var(--text3);margin-top:4px}
+.kpi-icon{position:absolute;top:14px;right:14px;font-size:18px;opacity:.25}
+
+/* PROGRESS BARS */
+.progress-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:20px}
+.ps-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.ps-title{font-size:13px;font-weight:500;color:var(--text)}
+.ps-legend{display:flex;gap:14px}
+.ps-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)}
+.ps-legend-dot{width:8px;height:8px;border-radius:50%}
+.prog-row{margin-bottom:14px}
+.prog-labels{display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px}
+.prog-name{color:var(--text2)}
+.prog-pct{color:var(--amber);font-family:'JetBrains Mono',monospace}
+.prog-bg{height:6px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+
+/* CHARTS ROW */
+.charts-row{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:20px}
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px}
+.cc-title{font-size:12px;font-weight:500;color:var(--text);margin-bottom:4px}
+.cc-sub{font-size:11px;color:var(--text3);margin-bottom:16px}
+.chart-wrap{position:relative}
+
+/* BREAKDOWN TABLE */
+.breakdown-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:20px}
+.bk-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.bk-title{font-size:13px;font-weight:500;color:var(--text)}
+.bk-tabs{display:flex;gap:4px}
+.bk-tab{padding:4px 12px;border-radius:6px;font-size:11px;cursor:pointer;border:none;background:none;color:var(--text3);font-family:'DM Sans',sans-serif;transition:all .15s}
+.bk-tab.active{background:var(--amber-dim);color:var(--amber)}
+.bk-table{width:100%;border-collapse:collapse}
+.bk-table tr{border-bottom:1px solid var(--border)}
+.bk-table tr:last-child{border-bottom:none}
+.bk-table td{padding:8px 0;font-size:13px}
+.bk-table td:first-child{color:var(--text2)}
+.bk-table td:last-child{text-align:right;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text)}
+.bk-table .bk-group{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);padding-top:14px;padding-bottom:4px;border-bottom:none}
+.bk-table .bk-total td{color:var(--text);font-weight:500;border-top:1px solid var(--border2);padding-top:12px}
+.bk-table .bk-total td:last-child{color:var(--amber)}
+.bk-table .bk-sub{font-size:10px;color:var(--text3)}
+
+/* TIMELINE */
+.timeline-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:20px}
+.tl-title-main{font-size:13px;font-weight:500;color:var(--text);margin-bottom:16px}
+.tl-scroll{overflow-x:auto;padding-bottom:8px}
+.tl-track{display:flex;gap:0;min-width:600px;position:relative;padding:20px 0 10px}
+.tl-line{position:absolute;top:28px;left:0;right:0;height:1px;background:var(--border)}
+.tl-event{display:flex;flex-direction:column;align-items:center;flex:1;position:relative;cursor:default}
+.tl-dot-wrap{width:14px;height:14px;border-radius:50%;border:2px solid var(--bg2);z-index:1;margin-bottom:8px;transition:transform .2s}
+.tl-event:hover .tl-dot-wrap{transform:scale(1.3)}
+.tl-ev-age{font-size:10px;color:var(--text3);margin-bottom:4px;font-family:'JetBrains Mono',monospace}
+.tl-ev-name{font-size:10px;color:var(--text2);text-align:center;max-width:80px;line-height:1.3}
+.tl-ev-amt{font-size:10px;color:var(--amber);font-family:'JetBrains Mono',monospace;margin-top:3px}
+.tl-retire-marker{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--amber);white-space:nowrap;background:var(--bg2);padding:2px 5px;border-radius:4px;border:1px solid var(--border2)}
+
+/* INSIGHT */
+.insight-bar{border-radius:var(--radius);padding:16px 20px;margin-bottom:20px;display:flex;align-items:flex-start;gap:14px}
+.insight-bar.ok{background:var(--teal-dim);border:1px solid rgba(27,191,138,.25)}
+.insight-bar.warn{background:var(--red-dim);border:1px solid rgba(224,90,90,.25)}
+.insight-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+.insight-content .insight-title{font-size:13px;font-weight:500;margin-bottom:4px}
+.insight-bar.ok .insight-title{color:var(--teal)}
+.insight-bar.warn .insight-title{color:var(--red)}
+.insight-content .insight-text{font-size:13px;color:var(--text2);line-height:1.6}
+
+/* PLACEHOLDER */
+.placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:400px;gap:16px;color:var(--text3)}
+.placeholder-icon{font-size:48px;opacity:.3}
+.placeholder-text{font-size:14px;text-align:center;max-width:280px;line-height:1.6}
+.placeholder-cta{color:var(--amber);font-size:13px}
+
+/* PHASE STRIP */
+.phase-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.phase-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+.phase-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.phase-val{font-size:18px;font-weight:500;color:var(--text);font-family:'JetBrains Mono',monospace}
+.phase-sub{font-size:11px;color:var(--text3);margin-top:3px}
+
+/* EMPTY STATES */
+.empty-state{text-align:center;padding:16px;color:var(--text3);font-size:12px}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .shell{grid-template-columns:1fr}
+  .sidebar{height:auto;position:relative;top:0;border-right:none;border-bottom:1px solid var(--border)}
+  .kpi-strip,.phase-strip{grid-template-columns:1fr 1fr}
+  .charts-row{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+  .kpi-strip,.phase-strip{grid-template-columns:1fr 1fr}
+  .main{padding:16px}
+  .header{padding:0 16px}
+  .sidebar{padding:20px 16px}
+}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.kpi,.chart-card,.breakdown-section,.timeline-section,.progress-section{animation:fadeUp .4s ease both}
+.kpi:nth-child(1){animation-delay:.05s}
+.kpi:nth-child(2){animation-delay:.1s}
+.kpi:nth-child(3){animation-delay:.15s}
+.kpi:nth-child(4){animation-delay:.2s}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">
+    <div class="logo-mark">F</div>
+    <div>
+      <div class="logo-text">Freedom Number</div>
+      <div class="logo-sub">Financial Independence Calculator · INR</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3)">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">Enter inputs to begin</span>
+    </div>
+    <button class="calc-btn-main" onclick="calculate()">Calculate →</button>
+  </div>
+</header>
+
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+
+  <div class="s-section">
+    <div class="s-title">Profile</div>
+    <div class="grid2s">
+      <div class="field"><label>Current age</label><input type="number" id="age" value="38" min="18" max="70"></div>
+      <div class="field"><label>Retire at</label><input type="number" id="retireAge" value="55"></div>
+    </div>
+    <div class="field"><label>Life expectancy</label><input type="number" id="lifeExp" value="85"></div>
+  </div>
+
+  <div class="s-section">
+    <div class="s-title">Monthly Expenses</div>
+    <div class="field"><label>Today's monthly spend (₹)</label><input type="number" id="monthlyExp" value="150000" step="5000"></div>
+    <div class="grid2s">
+      <div class="field"><label>Lifestyle inflation %</label><input type="number" id="lifestyleInf" value="1" step="0.5"><div class="hint">Above CPI</div></div>
+      <div class="field"><label>Emergency fund (mo)</label><input type="number" id="emergMonths" value="6"></div>
+    </div>
+    <div class="field"><label>Healthcare buffer/yr (₹)</label><input type="number" id="healthBuf" value="100000" step="10000"></div>
+  </div>
+
+  <div class="s-section">
+    <div class="s-title">Economic Assumptions</div>
+    <div class="stepper-field">
+      <span class="sf-label">Inflation rate</span>
+      <div class="stepper-row">
+        <button class="stepper-btn" onclick="step('inflation',-0.5,3,10)">−</button>
+        <span class="stepper-val" id="inflation-display">6.0%</span>
+        <input type="hidden" id="inflation" value="6">
+        <button class="stepper-btn" onclick="step('inflation',0.5,3,10)">+</button>
+      </div>
+    </div>
+    <div class="stepper-field">
+      <span class="sf-label">Pre-retirement return</span>
+      <div class="stepper-row">
+        <button class="stepper-btn" onclick="step('preReturn',-0.5,6,20)">−</button>
+        <span class="stepper-val" id="preReturn-display">12.0%</span>
+        <input type="hidden" id="preReturn" value="12">
+        <button class="stepper-btn" onclick="step('preReturn',0.5,6,20)">+</button>
+      </div>
+    </div>
+    <div class="stepper-field">
+      <span class="sf-label">Post-retirement return</span>
+      <div class="stepper-row">
+        <button class="stepper-btn" onclick="step('postReturn',-0.5,4,12)">−</button>
+        <span class="stepper-val" id="postReturn-display">7.0%</span>
+        <input type="hidden" id="postReturn" value="7">
+        <button class="stepper-btn" onclick="step('postReturn',0.5,4,12)">+</button>
+      </div>
+    </div>
+    <div class="stepper-field">
+      <span class="sf-label">Tax on investment gains</span>
+      <div class="stepper-row">
+        <button class="stepper-btn" onclick="step('taxRate',-2.5,0,30)">−</button>
+        <span class="stepper-val" id="taxRate-display">12.5%</span>
+        <input type="hidden" id="taxRate" value="12.5">
+        <button class="stepper-btn" onclick="step('taxRate',2.5,0,30)">+</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="s-section">
+    <div class="s-title">Your Corpus Today</div>
+    <div class="field"><label>Existing investments (₹)</label><input type="number" id="existing" value="5000000" step="100000"><div class="hint">Equity, MF, FD, PF, NPS</div></div>
+    <div class="grid2s">
+      <div class="field"><label>Monthly SIP (₹)</label><input type="number" id="monthlySip" value="75000" step="5000"></div>
+      <div class="field"><label>SIP step-up %/yr</label><input type="number" id="sipStepup" value="10"></div>
+    </div>
+    <div class="field"><label>Other income post-retirement (₹/yr)</label><input type="number" id="passiveInc" value="0" step="50000"><div class="hint">Rental, pension, dividends</div></div>
+    <div class="field"><label>Safety margin %</label><input type="number" id="safetyMargin" value="20" min="0" max="50"></div>
+  </div>
+
+  <div class="s-section">
+    <div class="s-title">Goals</div>
+    <div id="goalsContainer"></div>
+    <button class="add-btn" onclick="addGoal()">+ Add goal</button>
+  </div>
+
+  <div class="s-section">
+    <div class="s-title">Liabilities</div>
+    <div id="loansContainer"></div>
+    <button class="add-btn" onclick="addLoan()">+ Add loan / EMI</button>
+  </div>
+
+  <div style="padding-top:8px">
+    <button class="calc-btn-main" style="width:100%" onclick="calculate()">Calculate my freedom number →</button>
+  </div>
+
+</aside>
+
+<!-- MAIN -->
+<main class="main" id="mainPanel">
+  <div class="placeholder" id="placeholder">
+    <div class="placeholder-icon">◎</div>
+    <div class="placeholder-text">Fill in your details on the left and hit <strong style="color:var(--amber)">Calculate</strong> to see your complete financial freedom dashboard.</div>
+  </div>
+  <div id="dashboard" style="display:none">
+
+    <div class="dash-header">
+      <div>
+        <div class="dash-title" id="dashTitle">Your Freedom Number</div>
+        <div class="dash-sub" id="dashSub"></div>
+      </div>
+    </div>
+
+    <div class="kpi-strip">
+      <div class="kpi featured">
+        <div class="kpi-label">Freedom corpus needed</div>
+        <div class="kpi-val" id="k1">—</div>
+        <div class="kpi-sub" id="k1s"></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Monthly SWP at retirement</div>
+        <div class="kpi-val" id="k2">—</div>
+        <div class="kpi-sub" id="k2s"></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Projected corpus built</div>
+        <div class="kpi-val neutral" id="k3">—</div>
+        <div class="kpi-sub" id="k3s"></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Gap / Surplus</div>
+        <div class="kpi-val" id="k4">—</div>
+        <div class="kpi-sub" id="k4s"></div>
+      </div>
+    </div>
+
+    <div class="progress-section">
+      <div class="ps-header">
+        <div class="ps-title">Corpus Progress</div>
+        <div class="ps-legend">
+          <div class="ps-legend-item"><div class="ps-legend-dot" style="background:var(--amber)"></div>Current</div>
+          <div class="ps-legend-item"><div class="ps-legend-dot" style="background:var(--teal)"></div>Projected at retirement</div>
+          <div class="ps-legend-item"><div class="ps-legend-dot" style="background:var(--border)"></div>Target</div>
+        </div>
+      </div>
+      <div class="prog-row">
+        <div class="prog-labels"><span class="prog-name">Current investments vs target</span><span class="prog-pct" id="pct1">0%</span></div>
+        <div class="prog-bg"><div class="prog-fill" id="pfill1" style="width:0%;background:var(--amber)"></div></div>
+      </div>
+      <div class="prog-row">
+        <div class="prog-labels"><span class="prog-name">Projected corpus at retirement vs target</span><span class="prog-pct" id="pct2">0%</span></div>
+        <div class="prog-bg"><div class="prog-fill" id="pfill2" style="width:0%;background:var(--teal)"></div></div>
+      </div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="cc-title">Corpus Growth Projection</div>
+        <div class="cc-sub">Accumulation trajectory year-by-year</div>
+        <div class="chart-wrap"><canvas id="growthChart" height="200"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="cc-title">Corpus Composition</div>
+        <div class="cc-sub">What makes up your freedom number</div>
+        <div class="chart-wrap"><canvas id="donutChart" height="200"></canvas></div>
+      </div>
+    </div>
+
+    <div class="phase-strip">
+      <div class="phase-card"><div class="phase-label">Accumulation phase</div><div class="phase-val" id="ph1">—</div><div class="phase-sub" id="ph1s"></div></div>
+      <div class="phase-card"><div class="phase-label">Distribution phase</div><div class="phase-val" id="ph2">—</div><div class="phase-sub" id="ph2s"></div></div>
+      <div class="phase-card"><div class="phase-label">Real return</div><div class="phase-val" id="ph3">—</div><div class="phase-sub">Post-inflation, post-retirement</div></div>
+      <div class="phase-card"><div class="phase-label">Safe withdrawal rate</div><div class="phase-val" id="ph4">—</div><div class="phase-sub">Annual draw / base corpus</div></div>
+    </div>
+
+    <div class="timeline-section" id="timelineSection" style="display:none">
+      <div class="tl-title-main">Goals Timeline</div>
+      <div class="tl-scroll"><div class="tl-track" id="tlTrack"></div></div>
+    </div>
+
+    <div class="breakdown-section">
+      <div class="bk-header">
+        <div class="bk-title">Full Breakdown</div>
+        <div class="bk-tabs">
+          <button class="bk-tab active" onclick="switchTab('corpus')">Corpus</button>
+          <button class="bk-tab" onclick="switchTab('goals')">Goals</button>
+          <button class="bk-tab" onclick="switchTab('loans')">Liabilities</button>
+        </div>
+      </div>
+      <table class="bk-table" id="bkTableCorpus">
+        <tr><td colspan="2" class="bk-group">Retirement expenses</td></tr>
+        <tr><td>Annual expenses at retirement</td><td id="bkExpR">—</td></tr>
+        <tr><td>Healthcare buffer (inflation adjusted)</td><td id="bkHealth">—</td></tr>
+        <tr><td>Less: other income</td><td id="bkPassive">—</td></tr>
+        <tr><td>Net annual draw from corpus</td><td id="bkNet">—</td></tr>
+        <tr><td colspan="2" class="bk-group">Corpus components</td></tr>
+        <tr><td>Base corpus (SWP model)</td><td id="bkBase">—</td></tr>
+        <tr><td>Goals corpus (PV at retirement)</td><td id="bkGoalsSum">—</td></tr>
+        <tr><td>Emergency fund (inflation adjusted)</td><td id="bkEmerg">—</td></tr>
+        <tr><td>Tax drag on corpus</td><td id="bkTax">—</td></tr>
+        <tr><td>Safety margin</td><td id="bkSafety">—</td></tr>
+        <tr class="bk-total"><td>Total corpus needed</td><td id="bkTotal">—</td></tr>
+      </table>
+      <table class="bk-table" id="bkTableGoals" style="display:none">
+        <tr><td colspan="3" class="bk-group">Goal · Future value at goal year · PV needed in corpus</td></tr>
+        <tbody id="bkGoalsBody"></tbody>
+      </table>
+      <table class="bk-table" id="bkTableLoans" style="display:none">
+        <tr><td colspan="3" class="bk-group">Liability · Monthly EMI · Outstanding · Tenure</td></tr>
+        <tbody id="bkLoansBody"></tbody>
+      </table>
+    </div>
+
+    <div class="insight-bar" id="insightBar">
+      <div class="insight-icon" id="insightIcon"></div>
+      <div class="insight-content">
+        <div class="insight-title" id="insightTitle"></div>
+        <div class="insight-text" id="insightText"></div>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:12px 0 4px;font-size:11px;color:var(--text3)">
+      Built with Financial Freedom Calculator · Assumptions: Indian tax regime · All values in INR · For illustration only
+    </div>
+
+  </div>
+</main>
+</div>
+
+<script>
+let gc=0,lc=0;
+
+function step(id,delta,min,max){
+  const inp=document.getElementById(id);
+  let val=parseFloat(inp.value)||0;
+  val=Math.round((val+delta)*10)/10;
+  val=Math.max(min,Math.min(max,val));
+  inp.value=val;
+  document.getElementById(id+'-display').textContent=val.toFixed(1)+'%';
+}
+let growthChartObj=null,donutChartObj=null;
+
+const GTYPES=[
+  {v:'education',l:'Education',badge:'badge-edu',color:'#1bbf8a'},
+  {v:'marriage',l:'Marriage',badge:'badge-marriage',color:'#f0a500'},
+  {v:'property',l:'Property',badge:'badge-asset',color:'#4e9eff'},
+  {v:'vehicle',l:'Vehicle',badge:'badge-asset',color:'#4e9eff'},
+  {v:'travel',l:'Travel',badge:'badge-other',color:'#7a8090'},
+  {v:'other',l:'Other',badge:'badge-other',color:'#7a8090'},
+];
+const LTYPES=[
+  {v:'home',l:'Home Loan',badge:'badge-home'},
+  {v:'car',l:'Car Loan',badge:'badge-car'},
+  {v:'personal',l:'Personal Loan',badge:'badge-personal'},
+  {v:'education',l:'Education Loan',badge:'badge-edu'},
+  {v:'other',l:'Other',badge:'badge-other'},
+];
+
+function addGoal(cfg){
+  const id=++gc; cfg=cfg||{};
+  const typeOpts=GTYPES.map(t=>`<option value="${t.v}"${cfg.type===t.v?' selected':''}>${t.l}</option>`).join('');
+  const badgeCls=(GTYPES.find(t=>t.v===(cfg.type||'education'))||GTYPES[0]).badge;
+  const div=document.createElement('div');
+  div.className='item-card'; div.id='goal-'+id;
+  div.innerHTML=`<button class="remove-btn" onclick="removeItem('goal-${id}')">×</button>
+    <span class="badge ${badgeCls}" id="gbadge-${id}">${(GTYPES.find(t=>t.v===(cfg.type||'education'))||GTYPES[0]).l}</span>
+    <div><div class="ic-label">Goal name</div><input class="ic-input" id="gname-${id}" value="${cfg.name||''}" placeholder="e.g. Child 1 – UG college" style="width:calc(100% - 28px)"></div>
+    <div class="ic-grid">
+      <div><div class="ic-label">Type</div><select class="ic-select" id="gtype-${id}" onchange="updateGoalBadge(${id})">${typeOpts}</select></div>
+      <div><div class="ic-label">Years from now</div><input class="ic-input" type="number" id="gyears-${id}" value="${cfg.years||10}" min="1" max="40"></div>
+    </div>
+    <div class="ic-grid">
+      <div><div class="ic-label">Amount today (₹)</div><input class="ic-input" type="number" id="gamt-${id}" value="${cfg.amount||1500000}" step="50000"></div>
+      <div><div class="ic-label">Goal inflation %</div><input class="ic-input" type="number" id="ginf-${id}" value="${cfg.inf||8}" step="0.5"></div>
+    </div>`;
+  document.getElementById('goalsContainer').appendChild(div);
+}
+
+function updateGoalBadge(id){
+  const val=document.getElementById('gtype-'+id).value;
+  const t=GTYPES.find(x=>x.v===val)||GTYPES[GTYPES.length-1];
+  const b=document.getElementById('gbadge-'+id);
+  b.className='badge '+t.badge; b.textContent=t.l;
+}
+
+function addLoan(cfg){
+  const id=++lc; cfg=cfg||{};
+  const typeOpts=LTYPES.map(t=>`<option value="${t.v}"${cfg.type===t.v?' selected':''}>${t.l}</option>`).join('');
+  const badgeCls=(LTYPES.find(t=>t.v===(cfg.type||'home'))||LTYPES[0]).badge;
+  const div=document.createElement('div');
+  div.className='item-card'; div.id='loan-'+id;
+  div.innerHTML=`<button class="remove-btn" onclick="removeItem('loan-${id}')">×</button>
+    <span class="badge ${badgeCls}">${(LTYPES.find(t=>t.v===(cfg.type||'home'))||LTYPES[0]).l}</span>
+    <div class="ic-grid">
+      <div><div class="ic-label">Type</div><select class="ic-select" id="ltype-${id}">${typeOpts}</select></div>
+      <div><div class="ic-label">EMI/month (₹)</div><input class="ic-input" type="number" id="lemi-${id}" value="${cfg.emi||30000}" step="1000"></div>
+    </div>
+    <div class="ic-grid">
+      <div><div class="ic-label">Outstanding (₹)</div><input class="ic-input" type="number" id="lout-${id}" value="${cfg.outstanding||2000000}" step="100000"></div>
+      <div><div class="ic-label">Remaining years</div><input class="ic-input" type="number" id="lyears-${id}" value="${cfg.years||10}" min="1" max="30"></div>
+    </div>`;
+  document.getElementById('loansContainer').appendChild(div);
+}
+
+function removeItem(id){const el=document.getElementById(id);if(el)el.remove();}
+
+function fmt(n){return'₹'+Math.round(Math.abs(n)).toLocaleString('en-IN')}
+function fmtCr(n){const a=Math.abs(n);if(a>=10000000)return'₹'+Number((a/10000000).toFixed(2))+'Cr';if(a>=100000)return'₹'+Number((a/100000).toFixed(2))+'L';return fmt(a)}
+
+function getGoals(){
+  return Array.from(document.querySelectorAll('.item-card[id^="goal-"]')).map(c=>{
+    const id=c.id.replace('goal-','');
+    return{name:document.getElementById('gname-'+id).value||'Goal',type:document.getElementById('gtype-'+id).value,years:+document.getElementById('gyears-'+id).value||10,amount:+document.getElementById('gamt-'+id).value||0,inf:(+document.getElementById('ginf-'+id).value||6)/100};
+  });
+}
+function getLoans(){
+  return Array.from(document.querySelectorAll('.item-card[id^="loan-"]')).map(c=>{
+    const id=c.id.replace('loan-','');
+    return{type:document.getElementById('ltype-'+id).value,emi:+document.getElementById('lemi-'+id).value||0,outstanding:+document.getElementById('lout-'+id).value||0,years:+document.getElementById('lyears-'+id).value||0};
+  });
+}
+
+function switchTab(tab){
+  document.querySelectorAll('.bk-tab').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('bkTableCorpus').style.display=tab==='corpus'?'':'none';
+  document.getElementById('bkTableGoals').style.display=tab==='goals'?'':'none';
+  document.getElementById('bkTableLoans').style.display=tab==='loans'?'':'none';
+}
+
+function calculate(){
+  const age=+document.getElementById('age').value||38;
+  const retireAge=+document.getElementById('retireAge').value||55;
+  const lifeExp=+document.getElementById('lifeExp').value||85;
+  const monthlyExp=+document.getElementById('monthlyExp').value||150000;
+  const lifestyleInf=(+document.getElementById('lifestyleInf').value||1)/100;
+  const emergMonths=+document.getElementById('emergMonths').value||6;
+  const healthBuf=+document.getElementById('healthBuf').value||100000;
+  const inflation=(+document.getElementById('inflation').value||6)/100;
+  const preReturn=(+document.getElementById('preReturn').value||12)/100;
+  const postReturn=(+document.getElementById('postReturn').value||7)/100;
+  const taxRate=(+document.getElementById('taxRate').value||12.5)/100;
+  const existing=+document.getElementById('existing').value||0;
+  const monthlySip=+document.getElementById('monthlySip').value||0;
+  const sipStepup=(+document.getElementById('sipStepup').value||10)/100;
+  const passiveInc=+document.getElementById('passiveInc').value||0;
+  const safetyMargin=(+document.getElementById('safetyMargin').value||20)/100;
+  const ytr=Math.max(1,retireAge-age);
+  const retYrs=Math.max(1,lifeExp-retireAge);
+  const goals=getGoals();
+  const loans=getLoans();
+  const totInf=inflation+lifestyleInf;
+
+  // Retirement corpus
+  const expR=monthlyExp*12*Math.pow(1+totInf,ytr);
+  const healthR=healthBuf*Math.pow(1+inflation,ytr);
+  const netDraw=Math.max(0,expR+healthR-passiveInc);
+  const realRet=((1+postReturn)/(1+inflation))-1;
+  const baseCorpus=Math.abs(realRet)<0.001?netDraw*retYrs:netDraw*(1-Math.pow(1+realRet,-retYrs))/realRet;
+
+  // Goals
+  let totalGoalsPV=0;
+  const goalDetails=goals.map(g=>{
+    const fv=g.amount*Math.pow(1+g.inf,g.years);
+    const ageAtGoal=age+g.years;
+    const before=g.years<=ytr;
+    const pv=before?fv:fv/Math.pow(1+postReturn,g.years-ytr);
+    totalGoalsPV+=pv;
+    const tc=GTYPES.find(t=>t.v===g.type)||GTYPES[GTYPES.length-1];
+    return{...g,fv,ageAtGoal,pv,before,color:tc.color,typeLabel:tc.l};
+  });
+
+  const emergFund=monthlyExp*emergMonths*Math.pow(1+totInf,ytr);
+  const taxDrag=baseCorpus*taxRate*0.15;
+  const beforeSafety=baseCorpus+totalGoalsPV+emergFund+taxDrag;
+  const safetyBuf=beforeSafety*safetyMargin;
+  const totalCorpus=beforeSafety+safetyBuf;
+
+  // Projected corpus
+  let proj=existing*Math.pow(1+preReturn,ytr);
+  for(let y=0;y<ytr;y++){
+    const sip=(monthlySip*12)*Math.pow(1+sipStepup,y);
+    let ld=0; loans.forEach(l=>{if(y<l.years)ld+=l.emi*12;});
+    proj+=Math.max(0,sip-ld)*Math.pow(1+preReturn,ytr-y-0.5);
+  }
+  goalDetails.filter(g=>g.before).forEach(g=>{
+    proj-=g.fv*Math.pow(1+preReturn,Math.max(0,ytr-g.years));
+  });
+
+  const gap=proj-totalCorpus;
+  const swpM=netDraw/12;
+  const swr=(netDraw/baseCorpus)*100;
+  const realPct=realRet*100;
+  const pctNow=Math.min(100,Math.max(0,(existing/totalCorpus)*100));
+  const pctProj=Math.min(100,Math.max(0,(proj/totalCorpus)*100));
+
+  // UPDATE KPIs
+  document.getElementById('k1').textContent=fmtCr(totalCorpus);
+  document.getElementById('k1s').textContent='Target by age '+retireAge;
+  document.getElementById('k2').textContent=fmtCr(swpM)+'/mo';
+  document.getElementById('k2s').textContent='Net of other income';
+  document.getElementById('k3').textContent=fmtCr(Math.max(0,proj));
+  document.getElementById('k3s').textContent='At current trajectory';
+  const k4=document.getElementById('k4');
+  k4.textContent=(gap>=0?'+':'-')+fmtCr(Math.abs(gap));
+  k4.className='kpi-val '+(gap>=0?'teal':'red');
+  document.getElementById('k4s').textContent=gap>=0?'You are on track':'Shortfall to bridge';
+
+  // PROGRESS
+  setTimeout(()=>{
+    document.getElementById('pfill1').style.width=Math.round(pctNow)+'%';
+    document.getElementById('pct1').textContent=Math.round(pctNow)+'%';
+    document.getElementById('pfill2').style.width=Math.round(pctProj)+'%';
+    document.getElementById('pct2').textContent=Math.round(pctProj)+'%';
+  },150);
+
+  // PHASE STRIP
+  document.getElementById('ph1').textContent=ytr+'y';
+  document.getElementById('ph1s').textContent='Age '+age+' → '+retireAge;
+  document.getElementById('ph2').textContent=retYrs+'y';
+  document.getElementById('ph2s').textContent='Age '+retireAge+' → '+lifeExp;
+  document.getElementById('ph3').textContent=realPct.toFixed(1)+'%';
+  document.getElementById('ph4').textContent=swr.toFixed(1)+'%';
+
+  // GROWTH CHART
+  const labels=[],dataProj=[],dataTarget=[];
+  let running=existing;
+  for(let y=0;y<=ytr;y++){
+    labels.push('Age '+(age+y));
+    const sip=(monthlySip*12)*Math.pow(1+sipStepup,y);
+    let ld=0; loans.forEach(l=>{if(y<l.years)ld+=l.emi*12;});
+    if(y>0)running=running*(1+preReturn)+Math.max(0,sip-ld);
+    dataProj.push(Math.round(running/100000)/10);
+    dataTarget.push(Math.round(totalCorpus/100000)/10);
+  }
+  if(growthChartObj)growthChartObj.destroy();
+  growthChartObj=new Chart(document.getElementById('growthChart'),{
+    type:'line',
+    data:{labels,datasets:[
+      {label:'Projected corpus (₹L)',data:dataProj,borderColor:'#1bbf8a',backgroundColor:'rgba(27,191,138,0.08)',fill:true,tension:0.4,pointRadius:0,borderWidth:2},
+      {label:'Target (₹L)',data:dataTarget,borderColor:'#f0a500',borderDash:[4,4],pointRadius:0,borderWidth:1.5,fill:false},
+    ]},
+    options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'₹'+ctx.parsed.y.toFixed(1)+'L'}}},scales:{x:{ticks:{color:'#5a6070',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#5a6070',font:{size:10},callback:v=>'₹'+v+'L'},grid:{color:'rgba(255,255,255,0.04)'}}}}
+  });
+
+  // DONUT CHART
+  const donutData=[baseCorpus,totalGoalsPV,emergFund,taxDrag,safetyBuf].map(v=>Math.round(v));
+  if(donutChartObj)donutChartObj.destroy();
+  donutChartObj=new Chart(document.getElementById('donutChart'),{
+    type:'doughnut',
+    data:{labels:['Retirement base','Goals','Emergency fund','Tax drag','Safety buffer'],datasets:[{data:donutData,backgroundColor:['#f0a500','#1bbf8a','#4e9eff','#e05a5a','#7a8090'],borderColor:'#080e1a',borderWidth:2,hoverOffset:6}]},
+    options:{responsive:true,cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:'#9aa0b0',font:{size:11},boxWidth:10,padding:12}},tooltip:{callbacks:{label:ctx=>ctx.label+': '+fmtCr(ctx.raw)}}}}
+  });
+
+  // TIMELINE
+  const tls=document.getElementById('timelineSection');
+  const tlTrack=document.getElementById('tlTrack');
+  tlTrack.innerHTML='';
+  if(goalDetails.length>0){
+    tls.style.display='block';
+    const sorted=[...goalDetails].sort((a,b)=>a.ageAtGoal-b.ageAtGoal);
+    const allAges=[age,...sorted.map(g=>g.ageAtGoal),lifeExp];
+    const minA=Math.min(...allAges),maxA=Math.max(...allAges);
+    const line=document.createElement('div'); line.className='tl-line'; tlTrack.appendChild(line);
+    sorted.forEach(g=>{
+      const ev=document.createElement('div'); ev.className='tl-event';
+      const isPost=g.ageAtGoal>=retireAge;
+      ev.innerHTML=`<div class="tl-ev-age">${g.ageAtGoal}</div><div class="tl-dot-wrap" style="background:${g.color};${isPost?'border-color:#111d33':''}"></div><div class="tl-ev-name">${g.name}</div><div class="tl-ev-amt">${fmtCr(g.fv)}</div>`;
+      if(isPost){const m=document.createElement('div');m.className='tl-retire-marker';m.textContent='post-retire';ev.style.position='relative';ev.appendChild(m);}
+      tlTrack.appendChild(ev);
+    });
+  } else {tls.style.display='none';}
+
+  // BREAKDOWN TABLE
+  document.getElementById('bkExpR').textContent=fmtCr(expR)+'/yr';
+  document.getElementById('bkHealth').textContent=fmtCr(healthR)+'/yr';
+  document.getElementById('bkPassive').textContent='– '+fmtCr(passiveInc)+'/yr';
+  document.getElementById('bkNet').textContent=fmtCr(netDraw)+'/yr';
+  document.getElementById('bkBase').textContent=fmtCr(baseCorpus);
+  document.getElementById('bkGoalsSum').textContent=fmtCr(totalGoalsPV);
+  document.getElementById('bkEmerg').textContent=fmtCr(emergFund);
+  document.getElementById('bkTax').textContent=fmtCr(taxDrag);
+  document.getElementById('bkSafety').textContent=fmtCr(safetyBuf)+' ('+Math.round(safetyMargin*100)+'%)';
+  document.getElementById('bkTotal').textContent=fmtCr(totalCorpus);
+
+  const gbody=document.getElementById('bkGoalsBody');
+  gbody.innerHTML='';
+  if(goalDetails.length===0){gbody.innerHTML='<tr><td colspan="2" class="empty-state">No goals added</td></tr>';}
+  else{
+    goalDetails.sort((a,b)=>a.years-b.years).forEach(g=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${g.name} <span class="bk-sub">(age ${g.ageAtGoal}, ${g.before?'pre':'post'}-retirement, ${g.inf*100}% pa inflation)</span></td><td>${fmtCr(g.fv)} FV · <span style="color:var(--amber)">${fmtCr(g.pv)} PV</span></td>`;
+      gbody.appendChild(tr);
+    });
+  }
+
+  const lbody=document.getElementById('bkLoansBody');
+  lbody.innerHTML='';
+  const totalEMI=loans.reduce((s,l)=>s+l.emi,0);
+  const totalOut=loans.reduce((s,l)=>s+l.outstanding,0);
+  if(loans.length===0){lbody.innerHTML='<tr><td colspan="2" class="empty-state">No liabilities added</td></tr>';}
+  else{
+    loans.forEach(l=>{
+      const lt=LTYPES.find(t=>t.v===l.type)||LTYPES[LTYPES.length-1];
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${lt.l} <span class="bk-sub">(${l.years} yrs remaining)</span></td><td>${fmtCr(l.emi)}/mo · ${fmtCr(l.outstanding)} outstanding</td>`;
+      lbody.appendChild(tr);
+    });
+    const tr=document.createElement('tr');
+    tr.className='bk-total';
+    tr.innerHTML=`<td>Total</td><td>${fmtCr(totalEMI)}/mo · ${fmtCr(totalOut)}</td>`;
+    lbody.appendChild(tr);
+  }
+
+  // INSIGHT
+  const ib=document.getElementById('insightBar');
+  const extraSip=gap<0&&ytr>0?(()=>{const d=((Math.pow(1+preReturn,ytr)-1)/preReturn)*Math.pow(1+preReturn,0.5)*12;return d>0?Math.abs(gap)/d:0;})():0;
+  if(gap>=0){
+    ib.className='insight-bar ok';
+    document.getElementById('insightIcon').textContent='✓';
+    document.getElementById('insightTitle').textContent='You are on track';
+    document.getElementById('insightText').textContent=`Your projected corpus of ${fmtCr(proj)} exceeds your freedom number of ${fmtCr(totalCorpus)} by ${fmtCr(gap)}. Consider increasing your lifestyle buffer, retiring earlier, or directing the surplus to legacy / next-gen goals.`;
+  } else {
+    ib.className='insight-bar warn';
+    document.getElementById('insightIcon').textContent='!';
+    document.getElementById('insightTitle').textContent='Corpus gap — action required';
+    document.getElementById('insightText').textContent=`You have a shortfall of ${fmtCr(Math.abs(gap))}. To close it: increase monthly SIP by ~${fmtCr(extraSip)}, or push retirement back 2–3 years, or reduce lifestyle inflation assumptions. Small changes compounded over ${ytr} years have an outsized impact.`;
+  }
+
+  // DASH HEADER
+  document.getElementById('dashTitle').textContent=fmtCr(totalCorpus);
+  document.getElementById('dashSub').textContent='Your financial freedom number · Retire at '+retireAge+' · '+retYrs+' years of retirement covered · ₹'+Math.round(swpM).toLocaleString('en-IN')+'/mo SWP';
+
+  // STATUS
+  document.getElementById('statusDot').className='status-dot ready';
+  document.getElementById('statusText').textContent=gap>=0?'On track ✓':'Gap detected';
+
+  document.getElementById('placeholder').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+}
+
+// Seed defaults
+addGoal({name:'Child 1 – UG college',type:'education',years:10,amount:3000000,inf:9});
+addGoal({name:'Child 1 – PG / abroad',type:'education',years:13,amount:5000000,inf:9});
+addGoal({name:'Child 2 – UG college',type:'education',years:14,amount:3000000,inf:9});
+addGoal({name:'Child 2 – PG / abroad',type:'education',years:17,amount:5000000,inf:9});
+addGoal({name:'Child 1 – marriage',type:'marriage',years:18,amount:3000000,inf:7});
+addGoal({name:'Child 2 – marriage',type:'marriage',years:22,amount:3000000,inf:7});
+addLoan({type:'home',emi:55000,outstanding:5000000,years:15});
+</script>
+</body>
+</html>
