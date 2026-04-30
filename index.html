@@ -1,0 +1,158 @@
+
+<div id="vn" style="min-height:520px;background:#05030a;position:relative;overflow:hidden;border:1px solid #2a1245;font-family:Georgia,serif;user-select:none;">
+
+<style>
+#vn { color:#e0d4f5; }
+@keyframes breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes hint{0%,100%{opacity:0.3}50%{opacity:1}}
+@keyframes fadein{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes glow{0%,100%{opacity:0.4}50%{opacity:0.85}}
+.cb{background:rgba(13,9,22,0.92);border:1px solid #3a1f5e;color:#d0c0ee;padding:10px 16px;font-size:14px;cursor:pointer;text-align:left;font-family:Georgia,serif;transition:all 0.2s;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 50%,calc(100% - 12px) 100%,0 100%);display:block;width:100%;margin-bottom:8px;}
+.cb:hover{background:rgba(176,106,255,0.2);border-color:#b06aff;color:#fff;transform:translateX(5px);}
+</style>
+
+<div id="fade" style="position:absolute;inset:0;background:#000;opacity:0;transition:opacity 0.5s;z-index:40;pointer-events:none;"></div>
+
+<div id="corners">
+  <div style="position:absolute;top:8px;left:8px;width:28px;height:28px;border-top:1px solid #3a1f5e;border-left:1px solid #3a1f5e;opacity:0.5;z-index:5;"></div>
+  <div style="position:absolute;top:8px;right:8px;width:28px;height:28px;border-top:1px solid #3a1f5e;border-right:1px solid #3a1f5e;opacity:0.5;z-index:5;"></div>
+  <div style="position:absolute;bottom:8px;left:8px;width:28px;height:28px;border-bottom:1px solid #3a1f5e;border-left:1px solid #3a1f5e;opacity:0.5;z-index:5;"></div>
+  <div style="position:absolute;bottom:8px;right:8px;width:28px;height:28px;border-bottom:1px solid #3a1f5e;border-right:1px solid #3a1f5e;opacity:0.5;z-index:5;"></div>
+</div>
+
+<div id="title-screen" style="position:absolute;inset:0;z-index:50;background:radial-gradient(ellipse at 50% 40%,#1a0535 0%,#05030a 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;">
+  <div style="font-size:52px;margin-bottom:14px;animation:spin 20s linear infinite;filter:drop-shadow(0 0 14px #b06aff);">🔮</div>
+  <div style="font-size:26px;color:#e8c87a;font-weight:bold;text-align:center;margin-bottom:8px;text-shadow:0 0 20px rgba(232,200,122,0.5);letter-spacing:2px;">The Obsidian Grimoire</div>
+  <div style="color:#7a6a9a;font-size:13px;font-style:italic;letter-spacing:4px;margin-bottom:44px;">~ a tale of forbidden magic ~</div>
+  <button id="startBtn" style="background:rgba(176,106,255,0.08);border:1px solid #b06aff;color:#b06aff;padding:12px 34px;font-size:12px;letter-spacing:3px;cursor:pointer;font-family:Georgia,serif;transition:all 0.3s;">✦ BEGIN THE RITUAL ✦</button>
+</div>
+
+<div id="game-screen" style="display:none;position:absolute;inset:0;">
+  <div style="position:absolute;top:0;left:0;right:0;padding:9px 16px;display:flex;justify-content:space-between;background:linear-gradient(180deg,rgba(5,3,10,0.95),transparent);z-index:20;">
+    <span style="color:#e8c87a;font-size:10px;letter-spacing:3px;">✦ THE OBSIDIAN GRIMOIRE ✦</span>
+    <span style="color:#5a4a7a;font-size:10px;letter-spacing:2px;">Chapter I</span>
+  </div>
+  <div id="char-area" style="position:absolute;bottom:205px;left:0;right:0;display:flex;justify-content:center;pointer-events:none;z-index:10;">
+    <div style="text-align:center;">
+      <div id="char-emoji" style="font-size:80px;animation:breathe 4s ease-in-out infinite;filter:drop-shadow(0 0 14px rgba(176,106,255,0.5));transition:all 0.5s;line-height:1.1;">🧙</div>
+      <div style="width:80px;height:12px;background:radial-gradient(ellipse,rgba(176,106,255,0.3),transparent 70%);border-radius:50%;margin:6px auto 0;animation:glow 3s ease-in-out infinite;"></div>
+    </div>
+  </div>
+  <div id="choices-area" style="position:absolute;bottom:212px;left:0;right:0;padding:0 24px;z-index:20;display:none;animation:fadein 0.4s ease;"></div>
+  <div id="dialogue" style="position:absolute;bottom:0;left:0;right:0;height:200px;background:linear-gradient(180deg,rgba(5,3,10,0.88),rgba(10,6,20,0.97));border-top:1px solid #3a1f5e;cursor:pointer;z-index:15;">
+    <div id="name-tag" style="display:inline-block;padding:3px 18px 3px 14px;font-size:11px;letter-spacing:2px;color:#fff;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 50%,calc(100% - 10px) 100%,0 100%);margin:11px 0 0 18px;background:linear-gradient(135deg,#b06aff99,#b06aff44);">Narrator</div>
+    <div id="text-area" style="padding:7px 22px 0;font-size:15px;line-height:1.75;color:#e0d4f5;min-height:70px;"></div>
+    <div id="hint" style="position:absolute;bottom:10px;right:20px;font-size:10px;color:#6a5a8a;letter-spacing:2px;animation:hint 2s ease-in-out infinite;">▼ CLICK TO CONTINUE</div>
+  </div>
+</div>
+
+<div id="end-screen" style="display:none;position:absolute;inset:0;z-index:50;background:radial-gradient(ellipse at 50% 50%,#180420,#02000a);flex-direction:column;align-items:center;justify-content:center;animation:fadein 1.2s ease;">
+  <div id="end-rune" style="font-size:48px;margin-bottom:14px;animation:spin 18s linear infinite;filter:drop-shadow(0 0 14px #b06aff);">✨</div>
+  <div id="end-title" style="color:#e8c87a;font-size:20px;text-align:center;font-weight:bold;margin-bottom:12px;padding:0 20px;text-shadow:0 0 18px rgba(232,200,122,0.4);"></div>
+  <div id="end-desc" style="color:#7a6a9a;font-style:italic;text-align:center;max-width:340px;line-height:1.85;font-size:14px;margin-bottom:40px;padding:0 22px;"></div>
+  <button id="restartBtn" style="background:transparent;border:1px solid #3a1f5e;color:#6a5a8a;padding:9px 28px;font-size:10px;letter-spacing:3px;cursor:pointer;font-family:Georgia,serif;transition:all 0.3s;">↺ READ AGAIN</button>
+</div>
+
+<script>
+const S={
+  start:{bg:"#1a0a2e",char:"🧙",name:"Narrator",nc:"#e8c87a",text:"The Obsidian Archive. A library that should not exist — buried beneath Mirefall Academy, its location struck from every map for three centuries.",next:"s2"},
+  s2:{bg:"#1a0a2e",char:"🧙",name:"Narrator",nc:"#e8c87a",text:"You are Sable Voss, a junior archivist. Tonight, a sealed vault opened on its own. And inside... a grimoire bound in shadow.",next:"s3"},
+  s3:{bg:"#1a0a2e",char:"🧙",name:"Sable",nc:"#b06aff",text:"I have catalogued every book in this archive. But this one has no record. It is as if it appeared from nowhere.",next:"s4"},
+  s4:{bg:"#0d0520",char:"👁️",name:"The Grimoire",nc:"#ff4444",text:"...",next:"s5"},
+  s5:{bg:"#0d0520",char:"👁️",name:"The Grimoire",nc:"#ff4444",text:"You found me. Or perhaps I found you. Open me, archivist. Read the first page. Learn what they tried to bury.",next:"c1"},
+  c1:{bg:"#1a0a2e",char:"🧙",name:"Sable",nc:"#b06aff",text:"The cover pulses like a heartbeat. Every instinct says seal this vault. But...",choices:[{t:"Open it. Knowledge is never forbidden.",n:"open1"},{t:"Step back. Something feels wrong.",n:"ref1"}]},
+  open1:{bg:"#0d0520",char:"👁️",name:"The Grimoire",nc:"#ff4444",text:"Yesss. This Academy was not built to teach magic. It was built to contain it. Every student here is a lock.",next:"c2"},
+  c2:{bg:"#0d0520",char:"👁️",name:"The Grimoire",nc:"#ff4444",text:"Below sleeps something ancient. The students' magic feeds its chains unknowingly. You are all wardens of a sleeping god.",choices:[{t:"Ask how to free it.",n:"free1"},{t:"Demand to know who sealed it.",n:"tru1"}]},
+  free1:{bg:"#020008",char:"✨",name:"Epilogue",nc:"#e8c87a",text:"You descended alone. Your magic left in a cascade of violet light and the chains dissolved. The entity rose, weary, and simply left. The sky that night had seventeen stars it never had before.",isEnd:true,et:"⭐ The Warden's Sacrifice",ed:"You surrendered your gift to free an ancient being. The stars remember your name."},
+  tru1:{bg:"#1a0a2e",char:"👩‍🏫",name:"Headmistress Vane",nc:"#ff6aab",text:"Put. That. Down. I have been looking for that grimoire for twenty years. Give it to me. Now.",next:"c3"},
+  c3:{bg:"#1a0a2e",char:"🧙",name:"Sable",nc:"#b06aff",text:"She knows. She has always known. The way she looks at the grimoire — not with fear. With hunger.",choices:[{t:"Hand it over. Trust the Headmistress.",n:"tv"},{t:"Run. Expose the truth.",n:"ex1"}]},
+  tv:{bg:"#020008",char:"🔒",name:"Epilogue",nc:"#e8c87a",text:"She sealed the vault. Three months later a new class arrived. You watched them file in, young and magical. You said nothing. You never did.",isEnd:true,et:"🔒 The Comfortable Silence",ed:"You chose safety over truth. Every morning you walked past Elara Mirefall's portrait — and looked away."},
+  ex1:{bg:"#1a0f05",char:"✨",name:"Epilogue",nc:"#e8c87a",text:"The truth swept the academy like wildfire. When dawn came, half the students had packed. The Headmistress never recovered her authority.",isEnd:true,et:"🔥 The Illuminated",ed:"You exposed everything. The academy never fed again. You became the most wanted archivist in three kingdoms."},
+  ref1:{bg:"#1a0a2e",char:"🐱",name:"Ash",nc:"#aad4ff",text:"Wise. I am Ash. Your magic was stolen at birth by the academy's founders. You are not a student, Sable. You are a battery.",next:"c4"},
+  c4:{bg:"#1a0a2e",char:"🧙",name:"Sable",nc:"#b06aff",text:"A stranger in the dark tells me my entire life is a lie. Do I trust him?",choices:[{t:"Tell me more — Trust Ash.",n:"ta"},{t:"This is a trap — Confront Ash.",n:"ca"}]},
+  ta:{bg:"#1a0f05",char:"✨",name:"Epilogue",nc:"#e8c87a",text:"At midnight you read from the grimoire aloud. Every student felt magic flood back into them. You and Ash dismantled the academy together. Brick by brick.",isEnd:true,et:"💫 The Restoration",ed:"The students finally knew what they truly were."},
+  ca:{bg:"#1a0f05",char:"🕯️",name:"Epilogue",nc:"#e8c87a",text:"You found his note: When you believe, burn this. You burned it three days later. He found you. Your investigation took two years and shook the entire Realm.",isEnd:true,et:"🕯️ The Slow Burn",ed:"The truth always costs time. But it cost the academy everything."},
+};
+
+let nid="start",typing=false,timer=null,full="";
+
+const el=id=>document.getElementById(id);
+const node=()=>S[nid]||S.start;
+
+function setbg(c){el("vn").style.background=`radial-gradient(ellipse at 35% 25%,${c} 0%,#05030a 75%)`;}
+
+function typeText(txt,cb){
+  if(timer)clearTimeout(timer);
+  full=txt;el("text-area").textContent="";typing=true;el("hint").style.display="none";
+  let i=0;
+  const go=()=>{i++;el("text-area").textContent=txt.slice(0,i)+(i<txt.length?"▌":"");
+    if(i<txt.length){timer=setTimeout(go,28);}else{typing=false;el("text-area").textContent=txt;if(!node().choices&&!node().isEnd)el("hint").style.display="block";if(cb)cb();}};
+  timer=setTimeout(go,28);
+}
+
+function loadNode(id){
+  nid=id;const n=node();
+  setbg(n.bg);
+  el("char-emoji").textContent=n.char;
+  el("name-tag").textContent=n.name;
+  el("name-tag").style.background=`linear-gradient(135deg,${n.nc}99,${n.nc}44)`;
+  el("choices-area").style.display="none";
+  el("choices-area").innerHTML="";
+  el("hint").style.display="none";
+  typeText(n.text,()=>{
+    if(n.choices){
+      el("choices-area").innerHTML=n.choices.map(c=>`<button class="cb" data-n="${c.n}"><span style="color:#b06aff;margin-right:8px;font-size:10px;">◆</span>${c.t}</button>`).join("");
+      el("choices-area").style.display="block";
+      el("choices-area").querySelectorAll(".cb").forEach(b=>b.addEventListener("click",()=>goTo(b.dataset.n)));
+    }
+    if(n.isEnd){setTimeout(()=>showEnd(n),1600);}
+  });
+}
+
+function goTo(id){
+  el("fade").style.opacity=1;el("choices-area").style.display="none";
+  setTimeout(()=>{loadNode(id);el("fade").style.opacity=0;},500);
+}
+
+function showEnd(n){
+  el("end-rune").textContent=n.et.slice(0,2);
+  el("end-title").textContent=n.et.slice(2);
+  el("end-desc").textContent=n.ed;
+  el("end-screen").style.display="flex";
+}
+
+el("dialogue").addEventListener("click",()=>{
+  if(typing){if(timer)clearTimeout(timer);el("text-area").textContent=full;typing=false;
+    if(!node().choices&&!node().isEnd)el("hint").style.display="block";
+    if(node().choices){
+      const n=node();
+      el("choices-area").innerHTML=n.choices.map(c=>`<button class="cb" data-n="${c.n}"><span style="color:#b06aff;margin-right:8px;font-size:10px;">◆</span>${c.t}</button>`).join("");
+      el("choices-area").style.display="block";
+      el("choices-area").querySelectorAll(".cb").forEach(b=>b.addEventListener("click",()=>goTo(b.dataset.n)));
+    }
+    return;
+  }
+  if(node().choices||node().isEnd)return;
+  if(node().next)goTo(node().next);
+});
+
+el("startBtn").addEventListener("click",()=>{
+  el("title-screen").style.display="none";
+  el("game-screen").style.display="block";
+  loadNode("start");
+});
+
+el("startBtn").addEventListener("mouseenter",e=>{e.target.style.background="rgba(176,106,255,0.22)";e.target.style.boxShadow="0 0 22px rgba(176,106,255,0.35)";});
+el("startBtn").addEventListener("mouseleave",e=>{e.target.style.background="rgba(176,106,255,0.08)";e.target.style.boxShadow="none";});
+
+el("restartBtn").addEventListener("click",()=>{
+  el("end-screen").style.display="none";
+  el("title-screen").style.display="flex";
+  el("game-screen").style.display="none";
+});
+el("restartBtn").addEventListener("mouseenter",e=>{e.target.style.borderColor="#b06aff";e.target.style.color="#b06aff";});
+el("restartBtn").addEventListener("mouseleave",e=>{e.target.style.borderColor="#3a1f5e";e.target.style.color="#6a5a8a";});
+</script>
+</div>
